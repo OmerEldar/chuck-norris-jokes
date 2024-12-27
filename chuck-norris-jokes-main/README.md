@@ -48,6 +48,18 @@ First create virtualenv and activate it
 `pip install -r /path/to/requirements.txt`
 
 #### Run tests
+`brew install python`
+# Create virtual environment
+`python3 -m venv venv`
+
+# Activate it
+`source venv/bin/activate`
+
+Install the required packages:
+`pip install -r requirements.txt`
+`pip install pytest` # Make sure pytest is installed
+`pip install fastapi pytest-asyncio httpx`
+
 To run the service tests
 `pytest`
 

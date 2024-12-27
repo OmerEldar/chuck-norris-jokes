@@ -15,7 +15,6 @@ class Auth(BaseHTTPMiddleware):
             return JSONResponse(status_code=403, content={'error': 'Invalid token!'})
             
         account = accounts[auth_token]
-        print("DEBUG: account=", account)        
         # Check rate limits
         if not rate_limiter.is_allowed(
             auth_token,
