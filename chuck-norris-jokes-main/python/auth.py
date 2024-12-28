@@ -2,9 +2,10 @@ import json
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
 from rate_limiter import RateLimiter
+from fastapi import Request
+from file_handler import FileHandler
 
-file = open('../accounts.json')
-accounts = json.load(file)
+accounts = FileHandler.read_json_file('../accounts.json')
 rate_limiter = RateLimiter()
 
 class Auth(BaseHTTPMiddleware):
