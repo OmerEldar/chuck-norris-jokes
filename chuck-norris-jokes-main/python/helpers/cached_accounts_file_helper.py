@@ -13,11 +13,11 @@ class CacheEntry:
     data: Dict[str, Any]
     timestamp: datetime
 
-class CachedFileHelper:
-    def __init__(self, refresh_interval: int = 300, file_helper: FileHelper = None):
+class CachedAccountsFileHelper:
+    def __init__(self, refresh_interval: int = 300):
         self._refresh_interval = refresh_interval
         self._cache: Dict[str, CacheEntry] = {}
-        self._file_helper = file_helper or FileHelper()
+        self._file_helper = FileHelper()
 
     def read_json_file(self, file_path: str) -> Dict[str, Any]:
         """Read file with caching and automatic refresh"""
@@ -33,7 +33,7 @@ class CachedFileHelper:
             try:
                 new_data = self._file_helper.read_json_file(file_path)
                 
-                # Create new immutable cache entry
+                # It is not fully imutable.
                 self._cache[file_path] = CacheEntry(
                     data=new_data,
                     timestamp=current_time
