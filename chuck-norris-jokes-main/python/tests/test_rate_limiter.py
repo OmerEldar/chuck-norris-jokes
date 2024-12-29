@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, call
 from redis import Redis
 from rate_limiter import RateLimiter
 
@@ -67,30 +67,42 @@ class TestRateLimiter:
         
         assert result is False
 
-    @patch('utils.time_helpers.get_current_timestamp')
-    def test_rate_limit_exceeded(self, mock_time, limiter, mock_get_redis):
+    def test_rate_limit_exceeded(self, limiter, mock_get_redis):
         """Should block when rate limit exceeded"""
-        mock_time.return_value = 1000
-        mock_get_redis.incr.return_value = 2
-        
-        result = limiter.is_allowed("test-token", rate_limit=1, daily_limit=50)
-        
-        assert result is False
-        mock_get_redis.get.assert_called_with("rate:test-token:1000")
+        with patch('rate_limiter.get_current_timestamp', return_value=1000):
+            # Configure Redis mock
+            mock_get_redis.get.return_value = "1"  # Key exists
+            mock_get_redis.incr.return_value = 2   # Over limit
+            
+            result = limiter.is_allowed("test-token", rate_limit=1, daily_limit=50)
+            
+            assert result is False
+            mock_get_redis.get.assert_called_with("rate:test-token:1000")
 
-    @patch('utils.time_helpers.get_start_of_day_timestamp')
-    @patch('utils.time_helpers.get_current_timestamp')
-    def test_daily_limit_exceeded(self, mock_time, mock_day_start, limiter, mock_get_redis):
+    def test_daily_limit_exceeded(self, limiter, mock_get_redis):
         """Should block when daily limit exceeded"""
-        mock_time.return_value = 1000
-        mock_day_start.return_value = 900
-        mock_get_redis.get.side_effect = [None, "5"]
-        mock_get_redis.incr.return_value = 6
-        
-        result = limiter.is_allowed("test-token", rate_limit=1, daily_limit=5)
-        
-        assert result is False
-        mock_get_redis.get.assert_any_call("daily:test-token:900")
+        with patch('rate_limiter.get_current_timestamp', return_value=1000), \
+             patch('rate_limiter.get_start_of_day_timestamp', return_value=900):
+            
+            # Configure Redis mock for both checks
+            def get_side_effect(key):
+                if key == "rate:test-token:1000":
+                    return None  # Rate limit check passes
+                if key == "daily:test-token:900":
+                    return "5"   # Daily limit at max
+                return None
+                
+            mock_get_redis.get.side_effect = get_side_effect
+            mock_get_redis.incr.return_value = 6  # Over daily limit
+            
+            result = limiter.is_allowed("test-token", rate_limit=1, daily_limit=5)
+            
+            assert result is False
+            expected_calls = [
+                call("rate:test-token:1000"),
+                call("daily:test-token:900")
+            ]
+            mock_get_redis.get.assert_has_calls(expected_calls, any_order=True)
 
     @patch('utils.time_helpers.get_start_of_day_timestamp')
     @patch('utils.time_helpers.get_current_timestamp')
