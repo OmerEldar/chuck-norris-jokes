@@ -2,7 +2,7 @@ import pytest
 import os
 import json
 from unittest.mock import mock_open, patch
-from ..helpers.file_helper import FileHelper, FileError
+from helpers.file_helper import FileHelper, FileError
 
 @pytest.fixture
 def test_file_path():

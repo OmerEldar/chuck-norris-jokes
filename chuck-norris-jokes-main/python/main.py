@@ -9,5 +9,5 @@ app = FastAPI()
 async def root():
     response = requests.get("https://api.chucknorris.io/jokes/random").json()
     return Joke.from_dict(response)
-
 app.add_middleware(Auth)
+
