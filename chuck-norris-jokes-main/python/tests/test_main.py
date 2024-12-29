@@ -21,8 +21,8 @@ def test_200():
     assert "joke" in response.json()
     assert isinstance(response.json()["joke"], str)
 
-@patch('rate_limiter.RateLimiter._check_daily_limit')
-@patch('rate_limiter.RateLimiter._check_rate_limit')
+@patch('rate_limiter.RateLimiter._is_within_daily_limit')
+@patch('rate_limiter.RateLimiter._is_within_rate_limit')
 def test_daily_limit(mock_rate_check, mock_daily_check):
     init_test()
     headers = {"Authorization": "1111-2222-3333"}
@@ -40,7 +40,7 @@ def test_daily_limit(mock_rate_check, mock_daily_check):
     response = client.get("/joke", headers=headers)
     assert response.status_code == 429
 
-@patch('rate_limiter.RateLimiter._check_rate_limit')
+@patch('rate_limiter.RateLimiter._is_within_rate_limit')
 def test_rate_limit(mock_rate_check):
     init_test()
     headers = {"Authorization": "1111-2222-3333"}
