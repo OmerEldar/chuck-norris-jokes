@@ -1,30 +1,19 @@
 from redis import Redis
-from typing import Optional
 import logging
 
 logger = logging.getLogger(__name__)
 
-class RedisConnectionError(Exception):
-    """Custom exception for Redis connection errors"""
-    pass
+# Module-level singleton
+_redis_client = None
 
-class RedisConnection:
-    def __init__(self, host: str = 'localhost', port: int = 6379, db: int = 0):
-        """Initialize Redis connection"""
+def get_redis() -> Redis:
+    global _redis_client
+    if _redis_client is None:
         try:
-            self.client = Redis(
-                host=host,
-                port=port,
-                db=db,
-                decode_responses=True
-            )
-            # Verify connection
-            self.client.ping()
+            _redis_client = Redis(host='localhost', port=6379, db=0)
+            _redis_client.ping()  # Verify connection
             logger.info("Successfully connected to Redis")
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
-            raise RedisConnectionError(f"Could not connect to Redis: {e}")
-
-    def get_client(self) -> Redis:
-        """Get Redis client"""
-        return self.client 
+            raise
+    return _redis_client

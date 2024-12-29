@@ -8,18 +8,6 @@ class FileError(Exception):
 class FileHandler:
     @staticmethod
     def read_json_file(file_path: str) -> Dict[str, Any]:
-        """
-        Read and parse a JSON file
-        
-        Args:
-            file_path: Path to the JSON file
-            
-        Returns:
-            Dict containing the JSON data
-            
-        Raises:
-            FileError: If file cannot be read or parsed
-        """
         try:
             with open(file_path, 'r') as file:
                 return json.load(file)
