@@ -67,7 +67,7 @@ class TestRateLimiter:
         
         assert result is False
 
-    @patch('rate_limiter.RateLimiter._get_current_timestamp')
+    @patch('utils.time_helpers.get_current_timestamp')
     def test_rate_limit_exceeded(self, mock_time, limiter, mock_get_redis):
         """Should block when rate limit exceeded"""
         mock_time.return_value = 1000
@@ -78,28 +78,28 @@ class TestRateLimiter:
         assert result is False
         mock_get_redis.get.assert_called_with("rate:test-token:1000")
 
-    @patch('rate_limiter.RateLimiter._get_start_of_day_timestamp')
-    @patch('rate_limiter.RateLimiter._get_current_timestamp')
+    @patch('utils.time_helpers.get_start_of_day_timestamp')
+    @patch('utils.time_helpers.get_current_timestamp')
     def test_daily_limit_exceeded(self, mock_time, mock_day_start, limiter, mock_get_redis):
         """Should block when daily limit exceeded"""
         mock_time.return_value = 1000
         mock_day_start.return_value = 900
-        mock_get_redis.get.side_effect = [None, "5"]  # Rate limit ok, daily at limit
-        mock_get_redis.incr.return_value = 6  # Daily limit exceeded
+        mock_get_redis.get.side_effect = [None, "5"]
+        mock_get_redis.incr.return_value = 6
         
         result = limiter.is_allowed("test-token", rate_limit=1, daily_limit=5)
         
         assert result is False
         mock_get_redis.get.assert_any_call("daily:test-token:900")
 
-    @patch('rate_limiter.RateLimiter._get_start_of_day_timestamp')
-    @patch('rate_limiter.RateLimiter._get_current_timestamp')
+    @patch('utils.time_helpers.get_start_of_day_timestamp')
+    @patch('utils.time_helpers.get_current_timestamp')
     def test_within_all_limits(self, mock_time, mock_day_start, limiter, mock_get_redis):
         """Should allow when within both limits"""
         mock_time.return_value = 1000
         mock_day_start.return_value = 900
-        mock_get_redis.get.side_effect = [None, None]  # Both keys don't exist
-        mock_get_redis.incr.side_effect = [1, 1]  # Both increments within limits
+        mock_get_redis.get.side_effect = [None, None]
+        mock_get_redis.incr.side_effect = [1, 1]
         
         result = limiter.is_allowed("test-token", rate_limit=1, daily_limit=5)
         
