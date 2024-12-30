@@ -1,0 +1,20 @@
+{
+    "1111-2222-3333": {
+    "name": "Test User",
+    "plan": "free",
+    "daily_limit": 50,
+    "rate_limit": 1
+    },
+    "2222-3333-4444": {
+        "name": "Pro User",
+        "plan": "pro",
+        "daily_limit": 12000,
+        "rate_limit": 10
+    },
+    "3333-4444-5555": {
+        "name": "Enterprise User",
+        "plan": "enterprise",
+        "daily_limit": null,
+        "rate_limit": 100
+    }
+} 
